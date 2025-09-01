@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Modulaire - Système d'Interpolation Vidéo</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #bdc3c7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .nav-menu {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-menu ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--secondary-color);
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: #ecf0f1;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-menu a:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: var(--secondary-color);
+            font-size: 1.4em;
+            margin: 20px 0 15px 0;
+        }
+
+        .architecture-tree {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .component-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .component-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .feature-list li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .code-block {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .mermaid {
+            text-align: center;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .performance-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .performance-card h4 {
+            margin-bottom: 10px;
+        }
+
+        .performance-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .innovation-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .innovation-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .nav-menu ul {
+                flex-direction: column;
+            }
+            
+            .component-grid,
+            .performance-grid,
+            .innovation-points {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏗️ Architecture Modulaire</h1>
+            <p class="subtitle">Système d'Interpolation Vidéo - Analyse Technique Complète</p>
+        </header>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#composants">Composants</a></li>
+                <li><a href="#algorithmes">Algorithmes</a></li>
+                <li><a href="#flux">Diagrammes</a></li>
+                <li><a href="#defis">Défis Techniques</a></li>
+                <li><a href="#performance">Performance</a></li>
+                <li><a href="#innovation">Innovation</a></li>
+            </ul>
+        </nav>
+
+        <section id="architecture" class="section">
+            <h2>🏗️ Structure Hiérarchique</h2>
+            <div class="architecture-tree">
+📁 interpolation/<br>
+├── 🎮 <strong>Interface Utilisateur</strong><br>
+│   ├── video_interpolation_gui.py (Interface principale)<br>
+│   ├── launch.py (Lanceur)<br>
+│   └── ui/gpu_interpolation_interface.py (Interface GPU)<br>
+│<br>
+├── ⚙️ <strong>Couche Métier (core/)</strong><br>
+│   ├── gpu_interpolation.py (Moteur GPU)<br>
+│   ├── gpu_backends.py (Backends GPU)<br>
+│   ├── video_processor.py (Processeur vidéo)<br>
+│   ├── config.py (Configuration)<br>
+│   ├── history.py (Historique)<br>
+│   └── image_detection.py (Détection d'images)<br>
+│<br>
+└── 📄 <strong>Configuration</strong><br>
+    ├── smoothvideo_images.avs (Script AviSynth)<br>
+    └── parameters.avs (Paramètres)
+            </div>
+        </section>
+
+        <section id="composants" class="section">
+            <h2>🔧 Composants Principaux</h2>
+            
+            <div style="text-align: center; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <img src="interface_principale.png" alt="Interface Principale" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <p style="margin-top: 10px; font-style: italic; color: #6c757d;">Interface principale avec historique des projets, paramètres et contrôles</p>
+            </div>
+            
+            <div class="component-grid">
+                <div class="component-card">
+                    <h4>1. Interface Graphique</h4>
+                    <p><code>video_interpolation_gui.py</code></p>
+                    <p><strong>Rôle :</strong> Interface utilisateur principale avec Tkinter</p>
+                    <ul class="feature-list">
+                        <li>Sélection des dossiers source/sortie</li>
+                        <li>Configuration des paramètres d'interpolation</li>
+                        <li>Historique des projets (20 max)</li>
+                        <li>Calcul automatique de durée</li>
+                        <li>Barre de progression temps réel</li>
+                        <li>Dialogue de fin avec actions rapides</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>2. Interface GPU</h4>
+                    <p><code>ui/gpu_interpolation_interface.py</code></p>
+                    <p><strong>Rôle :</strong> Interface dédiée à l'interpolation GPU</p>
+                    <ul class="feature-list">
+                        <li>Sélection des backends GPU</li>
+                        <li>Configuration avancée GPU</li>
+                        <li>Benchmark et tests de performance</li>
+                        <li>Monitoring temps réel</li>
+                        <li>Log détaillé des opérations</li>
+                    </ul>
+                    
+                    <div style="margin-top: 15px; text-align: center;">
+                        <img src="interface_gpu.png" alt="Interface GPU" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);">
+                        <p style="margin-top: 8px; font-size: 0.9em; color: #6c757d; font-style: italic;">Interface GPU avec backend RIFE-AI et paramètres d'interpolation</p>
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <h4>3. Moteur GPU</h4>
+                    <p><code>core/gpu_interpolation.py</code></p>
+                    <p><strong>Rôle :</strong> Moteur principal d'interpolation GPU</p>
+                    <ul class="feature-list">
+                        <li>Gestion multi-backend</li>
+                        <li>Interpolation de séquences</li>
+                        <li>Création vidéo accélérée</li>
+                        <li>Callbacks de progression</li>
+                        <li>Gestion mémoire optimisée</li>
+                    </ul>
+                    
+                    <div style="margin-top: 15px; text-align: center;">
+                        <img src="monitoring_gpu.png" alt="Monitoring GPU" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);">
+                        <p style="margin-top: 8px; font-size: 0.9em; color: #6c757d; font-style: italic;">Monitoring temps réel des performances GPU avec NVIDIA GeForce RTX 5090</p>
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <h4>4. Backends GPU</h4>
+                    <p><code>core/gpu_backends.py</code></p>
+                    <ul class="feature-list">
+                        <li><strong>CuPyBackend :</strong> Calculs GPU rapides avec CUDA</li>
+                        <li><strong>PyTorchBackend :</strong> IA et deep learning</li>
+                        <li><strong>OpenCVCudaBackend :</strong> Vision par ordinateur accélérée</li>
+                        <li><strong>RIFEBackend :</strong> IA avancée pour interpolation</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>5. Détection Automatique</h4>
+                    <p><code>core/image_detection.py</code></p>
+                    <p><strong>Rôle :</strong> Analyse intelligente des séquences d'images</p>
+                    <ul class="feature-list">
+                        <li>Scan automatique des dossiers</li>
+                        <li>Détection des patterns de nommage</li>
+                        <li>Calcul des plages de frames</li>
+                        <li>Validation des séquences</li>
+                    </ul>
+                    
+                    <div style="margin-top: 15px; text-align: center;">
+                        <img src="detection_auto.png" alt="Détection Automatique" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);">
+                        <p style="margin-top: 8px; font-size: 0.9em; color: #6c757d; font-style: italic;">Interface de détection automatique des patterns d'images</p>
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <h4>4. Processeur Vidéo</h4>
+                    <p><code>video_processor.py</code></p>
+                    <p><strong>Rôle :</strong> Orchestration du pipeline de traitement</p>
+                    <ul class="feature-list">
+                        <li><strong>CPU :</strong> AviSynth + SVP (SmoothVideo Project)</li>
+                        <li><strong>GPU :</strong> Accélération matérielle automatique</li>
+                        <li><strong>Fallback :</strong> Basculement automatique GPU → CPU</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="algorithmes" class="section">
+            <h2>🧠 Algorithmes d'Interpolation</h2>
+            
+            <h3>Méthodes Implémentées :</h3>
+            
+            <h4>1. Interpolation CPU (AviSynth + SVP)</h4>
+            <div class="code-block">
+                <pre><code class="language-avisynth"># Chargement des images
+clip = ImageSource(pattern, start, end, fps)
+clip = ConvertToYV12(clip)
+
+# Interpolation SVP
+super = SVSuper(clip, "{gpu:1}")
+vectors = SVAnalyse(super, "{vectors}")
+clip = SVConvert(super, vectors, "{smoothfps}")</code></pre>
+            </div>
+
+            <h4>2. Interpolation GPU Linéaire</h4>
+            <div class="code-block">
+                <pre><code class="language-python"># Interpolation pondérée
+result = (1 - alpha) * frame1 + alpha * frame2</code></pre>
+            </div>
+
+            <h4>3. Interpolation IA (RIFE)</h4>
+            <ul class="feature-list">
+                <li>Utilise des réseaux de neurones pré-entraînés</li>
+                <li>Analyse optique des mouvements</li>
+                <li>Génération intelligente de frames intermédiaires</li>
+            </ul>
+
+            <h3>Stratégies d'Optimisation :</h3>
+            <ul class="feature-list">
+                <li><strong>Multithreading :</strong> Traitement parallèle</li>
+                <li><strong>Préchargement :</strong> <code>Prefetch(clip, 4)</code></li>
+                <li><strong>Gestion mémoire GPU :</strong> Transferts optimisés CPU ↔ GPU</li>
+                <li><strong>Fallback automatique :</strong> GPU → CPU en cas d'échec</li>
+            </ul>
+        </section>
+
+        <section id="flux" class="section">
+            <h2>📊 Diagrammes de Flux</h2>
+            
+            <h3>Flux Principal de Traitement :</h3>
+            <div class="mermaid">
+                graph TD
+                    A[Sélection Dossier PNG] --> B[Détection Automatique]
+                    B --> C[Configuration Paramètres]
+                    C --> D{GPU Disponible?}
+                    
+                    D -->|Oui| E[Traitement GPU]
+                    D -->|Non| F[Traitement CPU/AVS]
+                    
+                    E --> G[Interpolation IA/CUDA]
+                    F --> H[Interpolation SVP]
+                    
+                    G --> I[Génération Frames]
+                    H --> I
+                    
+                    I --> J[Encodage FFmpeg]
+                    J --> K[Vidéo Finale]
+                    
+                    K --> L[Dialogue Succès]
+                    L --> M[Ouvrir/Lire Vidéo]
+            </div>
+
+            <h3>Architecture des Backends GPU :</h3>
+            <div class="mermaid">
+                graph LR
+                    A[GPUBackendManager] --> B[CuPy Backend]
+                    A --> C[PyTorch Backend]
+                    A --> D[OpenCV-CUDA Backend]
+                    A --> E[RIFE-AI Backend]
+                    
+                    B --> F[Calculs CUDA]
+                    C --> G[Deep Learning]
+                    D --> H[Vision Computer]
+                    E --> I[IA Avancée]
+                    
+                    F --> J[GPUInterpolator]
+                    G --> J
+                    H --> J
+                    I --> J
+            </div>
+        </section>
+
+        <section id="defis" class="section">
+            <h2>⚡ Difficultés Techniques Identifiées</h2>
+            
+            <div class="component-grid">
+                <div class="component-card">
+                    <h4>1. Gestion Multi-Backend GPU</h4>
+                    <p><strong>Problème :</strong> Compatibilité variable des drivers CUDA</p>
+                    <p><strong>Solution :</strong> Système de fallback avec détection robuste</p>
+                    <p><strong>Code :</strong> Gestion d'exceptions silencieuses pour éviter les crashes</p>
+                </div>
+
+                <div class="component-card">
+                    <h4>2. Synchronisation CPU ↔ GPU</h4>
+                    <p><strong>Problème :</strong> Transferts mémoire coûteux</p>
+                    <p><strong>Solution :</strong> Traitement par lots et optimisation des transferts</p>
+                    <p><strong>Implémentation :</strong> <code>cupy.asarray()</code> et <code>cupy.asnumpy()</code></p>
+                </div>
+
+                <div class="component-card">
+                    <h4>3. Interface Utilisateur Responsive</h4>
+                    <p><strong>Problème :</strong> Blocage de l'UI pendant le traitement</p>
+                    <p><strong>Solution :</strong> Threading avec callbacks de progression</p>
+                    <p><strong>Code :</strong> <code>threading.Thread(target=self.process_video, daemon=True)</code></p>
+                </div>
+
+                <div class="component-card">
+                    <h4>4. Détection Automatique d'Images</h4>
+                    <p><strong>Problème :</strong> Variété des formats de nommage</p>
+                    <p><strong>Solution :</strong> Regex multiples avec patterns adaptatifs</p>
+                    <p><strong>Patterns :</strong> <code>%04d.png</code>, <code>frame_%05d.png</code>, etc.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="performance" class="section">
+            <h2>📈 Métriques de Performance</h2>
+            
+            <h3>🏆 Comparatif Temps Réel :</h3>
+            <div style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%); border-radius: 15px; padding: 25px; margin: 20px 0; border-left: 5px solid #e74c3c;">
+                <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 Test de Performance - 2700 fichiers PNG</h4>
+                <div style="background: white; border-radius: 10px; padding: 20px; margin: 10px 0;">
+                    <p><strong>🎯 Cible de travail :</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Fichiers :</strong> 2700 images PNG</li>
+                        <li><strong>Taille :</strong> 10.7 Mo par image</li>
+                        <li><strong>Résolution :</strong> 1920x1080 (Full HD)</li>
+                        <li><strong>Volume total :</strong> ~28.9 Go</li>
+                    </ul>
+                </div>
+                
+                <div class="performance-grid" style="margin-top: 20px;">
+                    <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>FlowFrames Video Interpolator</h4>
+                        <div style="font-size: 1.8em; font-weight: bold; margin: 10px 0;">39m 43s</div>
+                        <p>Solution concurrente</p>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+                        <h4>Mon Programme Python</h4>
+                        <div style="font-size: 1.8em; font-weight: bold; margin: 10px 0;">17m 49s</div>
+                        <p>🚀 <strong>2.23x plus rapide !</strong></p>
+                    </div>
+                </div>
+                
+                <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-top: 15px; text-align: center;">
+                    <strong style="color: #155724;">🎉 Gain de performance : 55% de temps économisé (21m 54s de moins)</strong>
+                </div>
+            </div>
+            
+            <h3>Benchmarks par Backend :</h3>
+            <div class="performance-grid">
+                <div class="performance-card">
+                    <h4>CuPy</h4>
+                    <div class="performance-value">~3.0x</div>
+                    <p>plus rapide (calculs simples)</p>
+                </div>
+                <div class="performance-card">
+                    <h4>PyTorch</h4>
+                    <div class="performance-value">~2.0x</div>
+                    <p>plus rapide (IA)</p>
+                </div>
+                <div class="performance-card">
+                    <h4>OpenCV-CUDA</h4>
+                    <div class="performance-value">~2.5x</div>
+                    <p>plus rapide (stable)</p>
+                </div>
+                <div class="performance-card">
+                    <h4>RIFE-AI</h4>
+                    <div class="performance-value">~0.8x</div>
+                    <p>lent mais haute qualité</p>
+                </div>
+            </div>
+
+            <h3>Critères d'Activation GPU :</h3>
+            <ul class="feature-list">
+                <li>Ratio FPS > 1.5x (ex: 24→60 FPS)</li>
+                <li>Nombre de frames > 300</li>
+                <li>Mémoire GPU suffisante</li>
+            </ul>
+        </section>
+
+        <section id="innovation" class="section">
+            <h2>🔍 Points d'Innovation</h2>
+            
+            <div class="innovation-points">
+                <div class="innovation-card">
+                    <h4>1. Architecture Hybride</h4>
+                    <ul class="feature-list">
+                        <li>Combinaison CPU (AviSynth/SVP) + GPU (CUDA/IA)</li>
+                        <li>Fallback automatique transparent</li>
+                        <li>Optimisation selon le contexte</li>
+                    </ul>
+                </div>
+
+                <div class="innovation-card">
+                    <h4>2. Interface Contextuelle</h4>
+                    <ul class="feature-list">
+                        <li>Aide intégrée par paramètre</li>
+                        <li>Calculs automatiques (durée, estimation)</li>
+                        <li>Workflow guidé</li>
+                    </ul>
+                </div>
+
+                <div class="innovation-card">
+                    <h4>3. Extensibilité</h4>
+                    <ul class="feature-list">
+                        <li>Architecture modulaire permettant l'ajout de nouveaux backends</li>
+                        <li>Séparation claire UI/Logique métier</li>
+                        <li>Configuration externalisée</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="conclusion">
+            <h2>📋 Conclusion de l'Analyse</h2>
+            <p>Ce système d'interpolation vidéo représente une <strong>solution technique sophistiquée</strong> qui combine intelligemment les approches traditionnelles (CPU/AviSynth) et modernes (GPU/IA) pour créer des vidéos fluides à partir de séquences d'images.</p>
+            
+            <h3>Forces du Système :</h3>
+            <ul class="feature-list">
+                <li><strong>Architecture Modulaire Robuste :</strong> Séparation claire entre interface, logique métier et backends</li>
+                <li><strong>Flexibilité Technologique :</strong> Support multi-backend avec fallback automatique</li>
+                <li><strong>Expérience Utilisateur Optimisée :</strong> Interface intuitive avec aide contextuelle et historique</li>
+                <li><strong>Performance Adaptative :</strong> Choix automatique CPU/GPU selon le contexte</li>
+                <li><strong>Extensibilité :</strong> Architecture permettant l'ajout facile de nouveaux algorithmes</li>
+            </ul>
+
+            <p>Cette architecture permet d'obtenir le <strong>meilleur des deux mondes</strong> : la qualité professionnelle des outils établis avec les performances des technologies émergentes, le tout dans une interface utilisateur moderne et intuitive.</p>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+        
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
